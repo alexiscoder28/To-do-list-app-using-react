@@ -6,9 +6,35 @@
 body {
   background: #333;
   color: hsl(200, 100%, 90%);
-  max-width: 400px;
+  max-width: 600px;
   padding: 1rem;
   margin: 0 auto;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.btn-logout {
+  background: hsl(0, 100%, 40%, 0.1);
+  border: 1px solid hsl(0, 100%, 40%);
+  color: hsl(0, 100%, 40%);
+  padding: 0.35em 0.75em;
+  font-size: 0.9rem;
+}
+
+.btn-logout:hover {
+  background: hsl(0, 100%, 40%, 0.2);
 }
 
 .new-item-form {
@@ -137,4 +163,9 @@ body {
 
 .list li:has(input:checked) label:hover::before {
   background: hsl(200, 100%, 30%);
+}
+
+.no-todos {
+  color: hsl(200, 20%, 60%);
+  font-style: italic;
 }

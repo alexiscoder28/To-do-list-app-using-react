@@ -1,17 +1,19 @@
 const express = require('express');
 const prisma = require('../config/db');
-const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
-
-// All routes require authentication
-router.use(authMiddleware);
 
 // Get all todos for current user
 router.get('/', async (req, res) => {
   try {
+    const { userId } = req.query;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required' });
+    }
+
     const todos = await prisma.todo.findMany({
-      where: { userId: req.userId },
+      where: { userId },
       orderBy: { createdAt: 'desc' }
     });
 
@@ -25,24 +27,37 @@ router.get('/', async (req, res) => {
 // Create a new todo
 router.post('/', async (req, res) => {
   try {
-    const { title, completed = false } = req.body;
+    const { title, userId, completed = false } = req.body;
 
-    if (!title) {
-      return res.status(400).json({ error: 'Title is required' });
+    if (!title || !userId) {
+      return res.status(400).json({ error: 'Title and userId are required' });
     }
+
+    // Auto-create user if doesn't exist (for Clerk users)
+    await prisma.user.upsert({
+      where: { id: userId },
+      update: {},
+      create: { 
+        id: userId,
+        email: `${userId}@clerk.user`,
+        password: 'clerk-auth',
+        name: 'Clerk User'
+      }
+    });
 
     const todo = await prisma.todo.create({
       data: {
         title,
         completed,
-        userId: req.userId
+        userId
       }
     });
 
     res.status(201).json({ todo });
   } catch (error) {
     console.error('Create todo error:', error);
-    res.status(500).json({ error: 'Server error' });
+    console.error('Error details:', error.message);
+    res.status(500).json({ error: 'Server error', details: error.message });
   }
 });
 
@@ -50,11 +65,15 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, completed } = req.body;
+    const { title, completed, userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required' });
+    }
 
     // Check if todo exists and belongs to user
     const existingTodo = await prisma.todo.findFirst({
-      where: { id, userId: req.userId }
+      where: { id, userId }
     });
 
     if (!existingTodo) {
@@ -80,10 +99,15 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    const { userId } = req.query;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'userId is required' });
+    }
 
     // Check if todo exists and belongs to user
     const existingTodo = await prisma.todo.findFirst({
-      where: { id, userId: req.userId }
+      where: { id, userId }
     });
 
     if (!existingTodo) {

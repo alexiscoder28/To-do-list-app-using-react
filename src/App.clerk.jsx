@@ -20,14 +20,9 @@ export default function App() {
 
   const fetchTodos = async () => {
     try {
-      const token = await getToken();
       const userId = user.id;
       
-      const response = await fetch(`${API_URL}/todos?userId=${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(`${API_URL}/todos?userId=${userId}`);
       
       if (response.ok) {
         const data = await response.json();
@@ -42,14 +37,17 @@ export default function App() {
     e.preventDefault();
     
     if (!newItem.trim()) return;
+    if (!user?.id) {
+      console.error('User not loaded');
+      return;
+    }
 
     try {
-      const token = await getToken();
+      console.log('Sending todo with userId:', user.id);
       const response = await fetch(`${API_URL}/todos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ 
           title: newItem,
@@ -61,6 +59,9 @@ export default function App() {
         const data = await response.json();
         setTodos([data.todo, ...todos]);
         setNewItem('');
+      } else {
+        const error = await response.json();
+        console.error('Server error:', error);
       }
     } catch (error) {
       console.error('Error adding todo:', error);
@@ -69,14 +70,15 @@ export default function App() {
 
   const toggleTodo = async (id, completed) => {
     try {
-      const token = await getToken();
       const response = await fetch(`${API_URL}/todos/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ completed }),
+        body: JSON.stringify({ 
+          completed,
+          userId: user.id 
+        }),
       });
 
       if (response.ok) {
@@ -93,12 +95,8 @@ export default function App() {
 
   const deleteTodo = async (id) => {
     try {
-      const token = await getToken();
-      const response = await fetch(`${API_URL}/todos/${id}`, {
+      const response = await fetch(`${API_URL}/todos/${id}?userId=${user.id}`, {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
 
       if (response.ok) {

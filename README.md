@@ -7,18 +7,24 @@ A modern full-stack todo application with authentication and cloud database stor
 
 ## 🛠️ Tech Stack
 
-**Frontend:**
-- React 18
-- Vite
-- Clerk (Authentication)
+**Languages:**
+- JavaScript
+- Python
+- TypeScript
 
-**Backend:**
-- Node.js
-- Express
-- Prisma ORM
+**Frameworks:**
+- React
+- Next.js
+- Express.js
+- Tailwind CSS
+- HTML/XML
 
 **Database:**
-- Neon PostgreSQL
+- Neon DB (SQL)
+- MongoDB (NoSQL)
 
-**Deployment:**
-- Vercel
+**Tools & Services:**
+- Clerk (Authentication)
+- Figma (Design)
+- Shadcn UI
+- Vercel (Deployment)
